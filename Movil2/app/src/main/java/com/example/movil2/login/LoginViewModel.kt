@@ -2,12 +2,12 @@ package com.example.movil2.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.movil2.data.repository.SicenetRepository
+import com.example.movil2.data.repository.ISicenetRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class LoginViewModel(private val repository: SicenetRepository) : ViewModel() {
+class LoginViewModel(private val repository: ISicenetRepository) : ViewModel() {
 
     private val _loginSuccess = MutableStateFlow(false)
     val loginSuccess: StateFlow<Boolean> = _loginSuccess

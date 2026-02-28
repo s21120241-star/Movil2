@@ -2,7 +2,7 @@ package com.example.movil2.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.movil2.data.repository.SicenetRepository
+import com.example.movil2.data.repository.ISicenetRepository
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import androidx.compose.runtime.getValue
@@ -15,7 +15,7 @@ sealed interface ProfileUiState {
     data class Error(val message: String) : ProfileUiState
 }
 
-class ProfileViewModel(private val repository: SicenetRepository) : ViewModel() {
+class ProfileViewModel(private val repository: ISicenetRepository) : ViewModel() {
 
     var uiState: ProfileUiState by mutableStateOf(ProfileUiState.Loading)
         private set
@@ -40,5 +40,4 @@ class ProfileViewModel(private val repository: SicenetRepository) : ViewModel() 
             }
         }
     }
-
 }

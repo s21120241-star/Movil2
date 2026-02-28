@@ -7,11 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
+class SicenetRepository : ISicenetRepository {
 
-class SicenetRepository {
-
-
-    suspend fun login(matricula: String, contrasenia: String, tipoUsuario: String): Boolean {
+    override suspend fun login(matricula: String, contrasenia: String, tipoUsuario: String): Boolean {
         return withContext(Dispatchers.IO) {
             val body = SoapRequestBuilder.buildLoginBody(matricula, contrasenia, tipoUsuario)
             val response = RetrofitClient.service.login(body)
@@ -48,8 +46,7 @@ class SicenetRepository {
         }
     }
 
-
-    suspend fun getProfile(): String? {
+    override suspend fun getProfile(): String? {
         return withContext(Dispatchers.IO) {
             val body = SoapRequestBuilder.buildProfileBody()
             val response = RetrofitClient.service.getProfile("", body)
