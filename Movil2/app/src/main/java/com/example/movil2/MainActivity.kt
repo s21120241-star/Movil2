@@ -189,7 +189,7 @@ fun AppNavHost(navController: NavHostController, remoteRepo: SicenetRepository) 
         composable("profile") {
             val dao = Sicenetdatabase.getDatabase(context).sicenetDao()
             val localRepo = Sicenetlocalrepository(dao)
-            val profileViewModel = ProfileViewModel(remoteRepo, localRepo)
+            val profileViewModel = ProfileViewModel(remoteRepo, localRepo, context)
             ProfileScreen(
                 viewModel = profileViewModel,
                 onLogout = {

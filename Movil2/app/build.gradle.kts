@@ -28,47 +28,53 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }
 }
 
 dependencies {
-    // --- Coil ---
+
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-    // --- Navigation ---
+    // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.5")
 
-    // --- Retrofit / OkHttp ---
+    // Retrofit / OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
 
-    // --- Coroutines ---
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // --- Room ---
+    // Room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    // --- WorkManager ---
+    // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    // --- Lifecycle ---
+    // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 
-    // --- Compose BOM ---
+    // Compose BOM
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -80,7 +86,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.material)
 
-    // --- Tests ---
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

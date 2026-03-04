@@ -1,5 +1,6 @@
 package com.example.movil2.ui.profile
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +20,8 @@ sealed interface ProfileUiState {
 
 class ProfileViewModel(
     private val remoteRepository: ISicenetRepository,
-    private val localRepository: Isicenetlocalrepository
+    private val localRepository: Isicenetlocalrepository,
+    private val context: Context
 ) : ViewModel() {
 
     var uiState: ProfileUiState by mutableStateOf(ProfileUiState.Loading)
@@ -29,17 +31,21 @@ class ProfileViewModel(
         viewModelScope.launch {
             uiState = ProfileUiState.Loading
             try {
-                // Intentar cargar desde la base de datos local primero
-                val localAlumno: AlumnoDB? = localRepository.getAlumno()
-                if (localAlumno != null) {
+                val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                val matriculaActiva = prefs.getString("matricula_activa", null)
+
+                val localAlumno = localRepository.getAlumno()
+
+                if (localAlumno != null && localAlumno.matricula == matriculaActiva) {
+                    // Los datos corresponden al usuario activo
                     uiState = ProfileUiState.Success(alumnoToJson(localAlumno), localAlumno.lastSync)
                 } else {
-                    // Fallback a remoto
+                    // Datos de otro usuario o sin datos — ir a remoto
                     val result = remoteRepository.getProfile()
                     if (result != null) {
                         uiState = ProfileUiState.Success(JSONObject(result))
                     } else {
-                        uiState = ProfileUiState.Error("No se pudo obtener el perfil académico")
+                        uiState = ProfileUiState.Error("No se pudo obtener el perfil")
                     }
                 }
             } catch (e: Exception) {

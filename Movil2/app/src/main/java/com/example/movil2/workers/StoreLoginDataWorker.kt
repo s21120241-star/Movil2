@@ -2,17 +2,14 @@ package com.example.movil2.workers
 
 import android.content.Context
 import androidx.work.*
-import com.example.movil2.data.local.SicenetDatabase
+import com.example.movil2.data.local.Sicenetdatabase
 import com.example.movil2.data.local.entity.AlumnoDB
 import com.example.movil2.data.repository.Sicenetlocalrepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.File
 
-/**
- * Worker 2 (Login sync):
- * Recibe el JSON del perfil desde FetchLoginDataWorker y lo almacena en la BD local.
- */
 class StoreLoginDataWorker(
     appContext: Context,
     params: WorkerParameters
@@ -20,8 +17,11 @@ class StoreLoginDataWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            val profileJson = inputData.getString(FetchLoginDataWorker.KEY_PROFILE_JSON)
-                ?: return@withContext Result.failure()
+            // Leer desde archivo temporal
+            val file = File(applicationContext.cacheDir, "temp_profile.json")
+            if (!file.exists()) return@withContext Result.failure()
+            val profileJson = file.readText()
+            file.delete()
 
             val json = JSONObject(profileJson)
             val alumno = AlumnoDB(
@@ -38,7 +38,7 @@ class StoreLoginDataWorker(
                 lastSync = System.currentTimeMillis()
             )
 
-            val dao = SicenetDatabase.getDatabase(applicationContext).sicenetDao()
+            val dao = Sicenetdatabase.getDatabase(applicationContext).sicenetDao()
             val localRepo = Sicenetlocalrepository(dao)
             localRepo.saveAlumno(alumno)
 

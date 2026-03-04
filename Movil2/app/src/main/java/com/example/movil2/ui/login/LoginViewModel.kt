@@ -35,26 +35,21 @@ class LoginViewModel(
                 // Con internet: autenticar en remoto y lanzar sincronización
                 val success = repository.login(matricula, contrasenia, tipoUsuario)
                 if (success) {
+                    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("matricula_activa", matricula).apply()
+
                     val fetchRequest = SyncManager.enqueueLoginSync(context)
 
-                    // Monitorear el primer worker para navegar cuando sea SUCCESS
                     WorkManager.getInstance(context)
-                        .getWorkInfoByIdLiveData(fetchRequest.id)
-                        .observeForever { info ->
-                            if (info != null) {
-                                when (info.state) {
-                                    WorkInfo.State.SUCCEEDED -> {
-                                        _isLoading.value = false
-                                        _loginSuccess.value = true
-                                    }
-                                    WorkInfo.State.FAILED,
-                                    WorkInfo.State.CANCELLED -> {
-                                        _isLoading.value = false
-                                        // Aunque falle el sync, permitir navegar (datos pueden ya existir)
-                                        _loginSuccess.value = true
-                                    }
-                                    else -> { /* ENQUEUED / RUNNING — seguir esperando */ }
+                        .getWorkInfoByIdFlow(fetchRequest.id)
+                        .collect { info ->
+                            when (info?.state) {
+                                WorkInfo.State.SUCCEEDED, WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                                    _isLoading.value = false
+                                    _loginSuccess.value = true
+                                    return@collect
                                 }
+                                else -> {}
                             }
                         }
                 } else {

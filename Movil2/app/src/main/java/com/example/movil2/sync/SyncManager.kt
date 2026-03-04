@@ -6,10 +6,6 @@ import com.example.movil2.workers.*
 
 object SyncManager {
 
-    /**
-     * Encola la cadena de Workers para Login + Perfil.
-     * Llamar justo después de autenticarse exitosamente con internet.
-     */
     fun enqueueLoginSync(context: Context): OneTimeWorkRequest {
         val fetchRequest = OneTimeWorkRequest.Builder(FetchLoginDataWorker::class.java)
             .setConstraints(Constraints.Builder()
@@ -25,7 +21,7 @@ object SyncManager {
         WorkManager.getInstance(context)
             .beginUniqueWork(
                 FetchLoginDataWorker.WORK_NAME,
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,  // ← cambio
                 fetchRequest
             )
             .then(storeRequest)
@@ -34,10 +30,6 @@ object SyncManager {
         return fetchRequest
     }
 
-    /**
-     * Encola la cadena de Workers para una funcionalidad específica.
-     * @param funcType  uno de FetchFunctionalityWorker.FUNC_*
-     */
     fun enqueueFunctionalitySync(context: Context, funcType: String): OneTimeWorkRequest {
         val inputData = workDataOf(FetchFunctionalityWorker.KEY_FUNC_TYPE to funcType)
 
@@ -56,7 +48,7 @@ object SyncManager {
         WorkManager.getInstance(context)
             .beginUniqueWork(
                 FetchFunctionalityWorker.workName(funcType),
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,  // ← cambio
                 fetchRequest
             )
             .then(storeRequest)

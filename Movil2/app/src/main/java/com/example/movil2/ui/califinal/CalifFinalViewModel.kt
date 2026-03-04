@@ -3,14 +3,13 @@ package com.example.movil2.ui.califinal
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.example.movil2.data.local.Sicenetdatabase
 import com.example.movil2.data.repository.Sicenetlocalrepository
 import com.example.movil2.sync.SyncManager
 import com.example.movil2.utils.DateUtils
 import com.example.movil2.utils.NetworkUtils
 import com.example.movil2.workers.FetchFunctionalityWorker
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -35,25 +34,17 @@ class CalifFinalViewModel(private val context: Context) : ViewModel() {
         viewModelScope.launch {
             _uiState.value = CalifFinalUiState.Loading
             if (NetworkUtils.isOnline(context)) {
-                val req = SyncManager.enqueueFunctionalitySync(context, FetchFunctionalityWorker.FUNC_CALIF_FINAL)
-                WorkManager.getInstance(context).getWorkInfoByIdLiveData(req.id)
-                    .observeForever { info ->
-                        if (info?.state == WorkInfo.State.SUCCEEDED ||
-                            info?.state == WorkInfo.State.FAILED) {
-                            viewModelScope.launch { loadFromLocal() }
-                        }
-                    }
-            } else {
-                loadFromLocal()
+                SyncManager.enqueueFunctionalitySync(context, FetchFunctionalityWorker.FUNC_CALIF_FINAL)
+                delay(3000)
             }
+            loadFromLocal()
         }
     }
 
     private suspend fun loadFromLocal() {
-        val alumno = localRepo.getAlumno() ?: run {
-            _uiState.value = CalifFinalUiState.Error("Sin sesión local"); return
-        }
-        val db = localRepo.getCalifFinal(alumno.matricula) ?: run {
+        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val matricula = prefs.getString("matricula_activa", null) ?: "default"
+        val db = localRepo.getCalifFinal(matricula) ?: run {
             _uiState.value = CalifFinalUiState.Error("Sin datos. Conéctate a internet."); return
         }
         val items = try {

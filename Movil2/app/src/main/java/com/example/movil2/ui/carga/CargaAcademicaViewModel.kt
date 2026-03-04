@@ -3,14 +3,13 @@ package com.example.movil2.ui.carga
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.example.movil2.data.local.Sicenetdatabase
 import com.example.movil2.data.repository.Sicenetlocalrepository
 import com.example.movil2.sync.SyncManager
 import com.example.movil2.utils.DateUtils
 import com.example.movil2.utils.NetworkUtils
 import com.example.movil2.workers.FetchFunctionalityWorker
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -34,34 +33,18 @@ class CargaAcademicaViewModel(private val context: Context) : ViewModel() {
     fun load() {
         viewModelScope.launch {
             _uiState.value = CargaUiState.Loading
-
             if (NetworkUtils.isOnline(context)) {
-                val fetchRequest = SyncManager.enqueueFunctionalitySync(
-                    context, FetchFunctionalityWorker.FUNC_CARGA
-                )
-                WorkManager.getInstance(context)
-                    .getWorkInfoByIdLiveData(fetchRequest.id)
-                    .observeForever { info ->
-                        if (info?.state == WorkInfo.State.SUCCEEDED) {
-                            viewModelScope.launch { loadFromLocal() }
-                        } else if (info?.state == WorkInfo.State.FAILED) {
-                            viewModelScope.launch { loadFromLocal() }
-                        }
-                    }
-            } else {
-                loadFromLocal()
+                SyncManager.enqueueFunctionalitySync(context, FetchFunctionalityWorker.FUNC_CARGA)
+                delay(3000)
             }
+            loadFromLocal()
         }
     }
 
     private suspend fun loadFromLocal() {
-        val alumno = localRepo.getAlumno()
-        if (alumno == null) {
-            _uiState.value = CargaUiState.Error("No hay datos locales disponibles")
-            return
-        }
-        val db = localRepo.getCargaAcademica(alumno.matricula)
-        if (db == null) {
+        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val matricula = prefs.getString("matricula_activa", null) ?: "default"
+        val db = localRepo.getCargaAcademica(matricula) ?: run {
             _uiState.value = CargaUiState.Error("Sin datos de carga académica. Conéctate a internet.")
             return
         }
@@ -76,8 +59,6 @@ class CargaAcademicaViewModel(private val context: Context) : ViewModel() {
                 val obj = array.getJSONObject(i)
                 obj.keys().asSequence().associateWith { key -> obj.optString(key) }
             }
-        } catch (e: Exception) {
-            emptyList()
-        }
+        } catch (e: Exception) { emptyList() }
     }
 }

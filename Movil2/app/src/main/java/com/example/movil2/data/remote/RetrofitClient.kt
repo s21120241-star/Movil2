@@ -9,7 +9,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 object RetrofitClient {
 
-    private lateinit var serviceInstance: SicenetService
+    private lateinit var serviceInstance: Sicenetservice
 
     fun init(context: Context) {
         val client = OkHttpClient.Builder()
@@ -23,9 +23,9 @@ object RetrofitClient {
             .addConverterFactory(ScalarsConverterFactory.create())
             .build()
 
-        serviceInstance = retrofit.create(SicenetService::class.java)
+        serviceInstance = retrofit.create(Sicenetservice::class.java)
     }
 
-    val service: SicenetService
+    val service: Sicenetservice
         get() = serviceInstance
 }

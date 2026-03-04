@@ -6,14 +6,8 @@ import com.example.movil2.data.remote.RetrofitClient
 import com.example.movil2.data.repository.SicenetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
-/**
- * Worker 1 (Funcionalidades):
- * Consulta la funcionalidad indicada desde sicenet.
- * INPUT:  KEY_FUNC_TYPE  → "carga" | "kardex" | "calif_unidades" | "calif_final"
- * OUTPUT: KEY_RESULT_JSON → JSON en string
- *         KEY_FUNC_TYPE   → reenvía el tipo para que el Worker2 sepa qué guardar
- */
 class FetchFunctionalityWorker(
     appContext: Context,
     params: WorkerParameters
@@ -36,11 +30,12 @@ class FetchFunctionalityWorker(
 
             if (resultJson == null) return@withContext Result.failure()
 
-            val output = workDataOf(
-                KEY_RESULT_JSON to resultJson,
-                KEY_FUNC_TYPE to funcType
-            )
-            Result.success(output)
+            // Guardar en archivo temporal — evita límite de 10KB de WorkManager
+            val file = File(applicationContext.cacheDir, "temp_$funcType.json")
+            file.writeText(resultJson)
+
+            // Solo pasa el tipo como output
+            Result.success(workDataOf(KEY_FUNC_TYPE to funcType))
         } catch (e: Exception) {
             Result.failure()
         }
