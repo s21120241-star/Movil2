@@ -1,0 +1,32 @@
+package com.example.movil2.data.remote
+
+import android.content.Context
+import com.example.movil2.Network.AddCookiesInterceptor
+import com.example.movil2.Network.ReceivedCookiesInterceptor
+import com.example.movil2.data.repository.Sicenetservice
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
+
+object RetrofitClient {
+
+    private lateinit var serviceInstance: Sicenetservice
+
+    fun init(context: Context) {
+        val client = OkHttpClient.Builder()
+            .addInterceptor(AddCookiesInterceptor(context))
+            .addInterceptor(ReceivedCookiesInterceptor(context))
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://sicenet.surguanajuato.tecnm.mx/")
+            .client(client)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .build()
+
+        serviceInstance = retrofit.create(Sicenetservice::class.java)
+    }
+
+    val service: Sicenetservice
+        get() = serviceInstance
+}
